@@ -1,4 +1,6 @@
 class ImageTag extends HTMLElement {
+	static observedAttributes = ["src"];
+
 	// Our shadow root, to which we attach our elements.
 	shadow = null;
 	// Whether the instance has been connected yet.
@@ -15,17 +17,6 @@ class ImageTag extends HTMLElement {
 
 		// Initialise our shadow
 		this.shadow = this.attachShadow({ mode: "open" });
-	}
-
-	// "connected" defines when an instance of our element has been created and
-	// added to the page.
-	connectedCallback() {
-		// We track our connection so that we don't create multiple elements
-		// unnecessarily, for example if attributes are "changed" before the
-		// element is connected.
-		this.isConnected = true;
-
-		this.generateImage();
 	}
 
 	// "connected" defines when an instance of our element has been created and
@@ -86,6 +77,24 @@ class ImageTag extends HTMLElement {
 		}
 
 		this.imageElement = document.createElement("img");
+
+		// Copy over any additional attributes that may appear on the original
+		// custom element definition.
+		for (const attributeName of this.getAttributeNames()) {
+			if (!ImageTag.observedAttributes.includes(attributeName)) {
+				const attributeValue = this.getAttribute(attributeName);
+
+				// Attributes without values are treated as boolean attributes,
+				// and the value of other attributes is copied.
+				if (attributeValue === "" || attributeValue === null) {
+					this.imageElement.setAttribute(attributeName, "");
+				} else {
+					this.imageElement.setAttribute(attributeName, attributeValue);
+				}
+			}
+		}
+
+		// We apply our source last, just in case.
 		this.imageElement.src = this.imageSource;
 
 		this.shadow.appendChild(this.imageElement);
