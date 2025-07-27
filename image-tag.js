@@ -5,19 +5,18 @@ class ImageTag extends HTMLElement {
 	shadow = null;
 	// Whether the instance has been connected yet.
 	isConnected = false;
-	// Whether we have encountered an error loading this image.
-	haveError = false;
+
 	// Our created image element.
 	imageElement = null;
-	// Our created fallback element.
-	fallbackElement = null;
 	// The source URL for our image.
 	imageSource = null;
-	// We monitor individual attributes
-	imageAttributes = {};
 
+	// Whether we have encountered an error loading this image.
+	haveError = false;
 	// The template for our fallback element.
 	fallbackElementTemplate = null;
+	// Our created fallback element.
+	fallbackElement = null;
 
 	constructor() {
 		super();
@@ -25,8 +24,10 @@ class ImageTag extends HTMLElement {
 		// Initialise our shadow
 		this.shadow = this.attachShadow({ mode: "open" });
 
-		this.initialiseFallbackElement();
+		this.initialiseFallbackTemplate();
 	}
+
+	// Lifecycle handling
 
 	// "connected" defines when an instance of our element has been created and
 	// added to the page.
@@ -71,6 +72,8 @@ class ImageTag extends HTMLElement {
 		this.generateImage();
 	}
 
+	// Image handling
+
 	/**
 	 * Generate an instance of our image, removing any existing image, copying
 	 * appropriate attributes, and attaching our event listener.
@@ -101,21 +104,7 @@ class ImageTag extends HTMLElement {
 	 * custom attributes as required.
 	 */
 	applyImageAttributes() {
-		// Copy over any additional attributes that may appear on the original
-		// custom element definition.
-		for (const attributeName of this.getAttributeNames()) {
-			if (!ImageTag.observedAttributes.includes(attributeName)) {
-				const attributeValue = this.getAttribute(attributeName);
-
-				// Attributes without values are treated as boolean attributes,
-				// and the value of other attributes is copied.
-				if (attributeValue === "" || attributeValue === null) {
-					this.imageElement.setAttribute(attributeName, "");
-				} else {
-					this.imageElement.setAttribute(attributeName, attributeValue);
-				}
-			}
-		}
+		this.applyAttributes(this.imageElement);
 
 		// We apply our source last, just in case.
 		this.imageElement.src = this.imageSource;
@@ -145,11 +134,13 @@ class ImageTag extends HTMLElement {
 		this.imageElement = null;
 	}
 
+	// Fallback handling
+
 	/**
 	 * Initialise our fallback element, ready to display if the image fails to
 	 * load.
 	 */
-	initialiseFallbackElement() {
+	initialiseFallbackTemplate() {
 		this.fallbackElementTemplate = document.createElement('template');
 
 		this.fallbackElementTemplate.innerHTML = `
@@ -166,9 +157,22 @@ class ImageTag extends HTMLElement {
 	generateFallback() {
 		this.destroyImage();
 
-		this.fallbackElement = this.fallbackElementTemplate.content.cloneNode(true);
+		const fallbackClone = this.fallbackElementTemplate.content.cloneNode(true);
+
+		// We look for the first element in our clone so that we use the content
+		// of the template, not the template itself.
+		this.fallbackElement = fallbackClone.querySelector("*");
+
+		this.applyFallbackAttributes();
 
 		this.shadow.appendChild(this.fallbackElement);
+	}
+
+	/**
+	 * Copy attributes from our root element down to our fallback.
+	 */
+	applyFallbackAttributes() {
+		this.applyAttributes(this.fallbackElement);
 	}
 
 	/**
@@ -182,6 +186,27 @@ class ImageTag extends HTMLElement {
 		this.shadow.removeChild(this.fallbackElement);
 
 		this.fallbackElement = null;
+	}
+
+	// Utilities
+
+	/**
+	 * Copy attributes from ImageTag to the provided target.
+	 */
+	applyAttributes(target) {
+		for (const attributeName of this.getAttributeNames()) {
+			if (!ImageTag.observedAttributes.includes(attributeName)) {
+				const attributeValue = this.getAttribute(attributeName);
+
+				// Attributes without values are treated as boolean attributes,
+				// and the value of other attributes is copied.
+				if (attributeValue === "" || attributeValue === null) {
+					target.setAttribute(attributeName, "");
+				} else {
+					target.setAttribute(attributeName, attributeValue);
+				}
+			}
+		}
 	}
 }
 
