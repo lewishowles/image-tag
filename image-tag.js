@@ -5,18 +5,27 @@ class ImageTag extends HTMLElement {
 	shadow = null;
 	// Whether the instance has been connected yet.
 	isConnected = false;
+	// Whether we have encountered an error loading this image.
+	haveError = false;
 	// Our created image element.
 	imageElement = null;
+	// Our created fallback element.
+	fallbackElement = null;
 	// The source URL for our image.
 	imageSource = null;
 	// We monitor individual attributes
 	imageAttributes = {};
+
+	// The template for our fallback element.
+	fallbackElementTemplate = null;
 
 	constructor() {
 		super();
 
 		// Initialise our shadow
 		this.shadow = this.attachShadow({ mode: "open" });
+
+		this.initialiseFallbackElement();
 	}
 
 	// "connected" defines when an instance of our element has been created and
@@ -33,12 +42,12 @@ class ImageTag extends HTMLElement {
 	/**
 	 * Monitor attribute changes, reacting appropriately.
 	 *
-	 * @param  {string}  name
-	 *     The name of the attribute that has changed.
-	 * @param  {string}  oldValue
-	 *     The old value of the attribute.
-	 * @param  {string}  newValue
-	 *     The new value of the attribute.
+	 * @param	{string}	name
+	 *		 The name of the attribute that has changed.
+	 * @param	{string}	oldValue
+	 *		 The old value of the attribute.
+	 * @param	{string}	newValue
+	 *		 The new value of the attribute.
 	 */
 	attributeChangedCallback(name, oldValue, newValue) {
 		// If nothing has changed, we don't need to do anything.
@@ -63,7 +72,8 @@ class ImageTag extends HTMLElement {
 	}
 
 	/**
-	 * Generate an instance of our image.
+	 * Generate an instance of our image, removing any existing image, copying
+	 * appropriate attributes, and attaching our event listener.
 	 */
 	generateImage() {
 		// If we don't have a valid source, ignore it for now.
@@ -71,13 +81,26 @@ class ImageTag extends HTMLElement {
 			return;
 		}
 
-		// Remove any existing image, so we have a clean slate.
-		if (this.imageElement) {
-			this.shadow.removeChild(this.imageElement);
-		}
+		this.haveError = false;
+
+		// Remove any existing image or fallback, so we have a clean slate.
+		this.destroyImage();
+		this.destroyFallback();
 
 		this.imageElement = document.createElement("img");
 
+		this.applyImageAttributes();
+
+		this.shadow.appendChild(this.imageElement);
+
+		this.monitorImage();
+	}
+
+	/**
+	 * Copy attributes from our root element down to our image, and apply any
+	 * custom attributes as required.
+	 */
+	applyImageAttributes() {
 		// Copy over any additional attributes that may appear on the original
 		// custom element definition.
 		for (const attributeName of this.getAttributeNames()) {
@@ -96,8 +119,69 @@ class ImageTag extends HTMLElement {
 
 		// We apply our source last, just in case.
 		this.imageElement.src = this.imageSource;
+	}
 
-		this.shadow.appendChild(this.imageElement);
+	/**
+	 * Monitor our image. If we detect an error, set our error state.
+	 */
+	monitorImage() {
+		this.imageElement.addEventListener("error", () => {
+			this.generateFallback();
+		});
+	}
+
+	/**
+	 * Destroy our image and references to it. Removing the element from our
+	 * shadow DOM will automatically remove event listeners if there are no
+	 * references to it remaining.
+	 */
+	destroyImage() {
+		if (!this.imageElement) {
+			return;
+		}
+
+		this.shadow.removeChild(this.imageElement);
+
+		this.imageElement = null;
+	}
+
+	/**
+	 * Initialise our fallback element, ready to display if the image fails to
+	 * load.
+	 */
+	initialiseFallbackElement() {
+		this.fallbackElementTemplate = document.createElement('template');
+
+		this.fallbackElementTemplate.innerHTML = `
+			<div class="image-tag-fallback">
+				No image
+			</div>
+		`;
+	}
+
+	/**
+	 * Generate a fallback to display to replace our image. This is used when
+	 * the image fails to load.
+	 */
+	generateFallback() {
+		this.destroyImage();
+
+		this.fallbackElement = this.fallbackElementTemplate.content.cloneNode(true);
+
+		this.shadow.appendChild(this.fallbackElement);
+	}
+
+	/**
+	 * Destroy our fallback element.
+	 */
+	destroyFallback() {
+		if (!this.fallbackElement) {
+			return;
+		}
+
+		this.shadow.removeChild(this.fallbackElement);
+
+		this.fallbackElement = null;
 	}
 }
 
