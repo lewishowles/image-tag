@@ -4,11 +4,31 @@
 
 		<style>
 			html, body { margin: 0; height: 100vh; }
-			body { display: flex; align-items: center; justify-content: center; color: #334155; }
+			body { display: flex; flex-direction: column; gap: 2rem; align-items: center; justify-content: center; color: #334155; }
+			.image-box { border: 1px solid black; width: 20rem; height: 20rem; display: flex; justify-content: center; align-items: center; }
+
+			image-tag {
+				--image-height: 15rem;
+				--image-width: 15rem;
+			}
+
+			.custom-styling {
+				--fallback-background: oklch(96.9% 0.015 12.422);
+				--fallback-border-radius: 1rem;
+				--fallback-icon-colour: oklch(45.5% 0.188 13.697);
+				--fallback-icon-size: 2rem;
+			}
 		</style>
 	</head>
 	<body>
-		<image-tag src="https://picsum.photos/300/300"></image-tag>
-		<image-tag src="#"></image-tag>
+		<div class="image-box">
+			<image-tag src="https://picsum.photos/300/300"></image-tag>
+		</div>
+		<div class="image-box">
+			<image-tag src="#"></image-tag>
+		</div>
+		<div class="custom-styling">
+			<image-tag src="#"></image-tag>
+		</div>
 	</body>
 </html>

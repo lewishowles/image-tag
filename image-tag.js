@@ -89,21 +89,27 @@ class ImageTag extends HTMLElement {
 		const style = document.createElement("style");
 
 		style.textContent = `
+			.image-tag-img {
+				height: var(--image-height, 100%);
+				width: var(--image-width, 100%);
+			}
+
 			.image-tag-fallback {
 				align-items: center;
-				background-color: #f3f4f6;
-				border-radius: 0.5rem;
+				background-color: var(--fallback-background, oklch(98.4% 0.003 247.858));
+				border-radius: var(--fallback-border-radius, 0);
+				color: var(--fallback-icon-colour, oklch(27.9% 0.041 260.031));
 				display: flex;
-				height: 10rem;
+				height: var(--fallback-height, var(--image-height, 100%));
 				justify-content: center;
-				width: 10rem;
+				width: var(--fallback-width, var(--image-width, 100%));
 			}
 
 			.image-tag-fallback-icon {
 				aspect-ratio: 1 / 1;
 				height: auto;
 				max-width: 100%;
-				width: 1.5rem;
+				width: var(--fallback-icon-size, 1.5rem);
 			}
 		`;
 
@@ -146,6 +152,7 @@ class ImageTag extends HTMLElement {
 
 		// We apply our source last, just in case.
 		this.imageElement.src = this.imageSource;
+		this.imageElement.classList.add("image-tag-img");
 	}
 
 	/**
