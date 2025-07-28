@@ -21,8 +21,7 @@ class ImageTag extends HTMLElement {
 	constructor() {
 		super();
 
-		// Initialise our shadow
-		this.shadow = this.attachShadow({ mode: "open" });
+		this.initialiseShadow();
 
 		this.initialiseFallbackTemplate();
 	}
@@ -70,6 +69,45 @@ class ImageTag extends HTMLElement {
 		}
 
 		this.generateImage();
+	}
+
+	// Shadow DOM
+
+	/**
+	 * Initialise our shadow, including basic styling.
+	 */
+	initialiseShadow() {
+		this.shadow = this.attachShadow({ mode: "open" });
+
+		this.applyStyles();
+	}
+
+	/**
+	 * Apply our basic styles to our fallback image.
+	 */
+	applyStyles() {
+		const style = document.createElement("style");
+
+		style.textContent = `
+			.image-tag-fallback {
+				align-items: center;
+				background-color: #f3f4f6;
+				border-radius: 0.5rem;
+				display: flex;
+				height: 10rem;
+				justify-content: center;
+				width: 10rem;
+			}
+
+			.image-tag-fallback-icon {
+				aspect-ratio: 1 / 1;
+				height: auto;
+				max-width: 100%;
+				width: 1.5rem;
+			}
+		`;
+
+		this.shadow.appendChild(style);
 	}
 
 	// Image handling
@@ -145,7 +183,14 @@ class ImageTag extends HTMLElement {
 
 		this.fallbackElementTemplate.innerHTML = `
 			<div class="image-tag-fallback">
-				No image
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 18" role="presentation" class="image-tag-fallback-icon">
+					<g fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
+						<path stroke="currentColor" d="m6.837 12.493 5.206-5.2a1 1 0 0 1 1.414 0l3.043 3.043" />
+						<path stroke="currentColor" d="M2 7v6.5a2 2 0 0 0 2 2h8.5" />
+						<rect width="11.5" height="9.5" x="5" y="3" stroke="currentColor" rx="2" transform="rotate(180 10.75 7.75)" />
+						<path fill="currentColor" fill-rule="nonzero" d="M8.25 7.25c-.551 0-1-.449-1-1s.449-1 1-1 1 .449 1 1-.449 1-1 1" />
+					</g>
+				</svg>
 			</div>
 		`;
 	}
@@ -196,6 +241,12 @@ class ImageTag extends HTMLElement {
 	applyAttributes(target) {
 		for (const attributeName of this.getAttributeNames()) {
 			if (!ImageTag.observedAttributes.includes(attributeName)) {
+				// We don't pass down classes, since any CSS applied to them
+				// doesn't get applied through the shadow boundary anyway.
+				if (attributeName === "class") {
+					continue;
+				}
+
 				const attributeValue = this.getAttribute(attributeName);
 
 				// Attributes without values are treated as boolean attributes,
