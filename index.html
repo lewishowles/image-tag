@@ -3,9 +3,40 @@
 		<script src="image-tag.js"></script>
 
 		<style>
-			html, body { margin: 0; min-height: 100vh; }
-			body { display: flex; flex-direction: column; gap: 2rem; align-items: center; justify-content: center; color: #334155; }
-			.image-box { border: 1px solid black; width: 20rem; height: 20rem; display: flex; justify-content: center; align-items: center; flex-shrink: 0; }
+			:root {
+				--example-spacing: 2rem;
+			}
+
+			html, body {
+				margin: 0;
+				min-height: calc(100vh - (var(--example-spacing) * 2));
+				font-family: system-ui, 'Open Sans', 'Helvetica Neue', sans-serif
+			}
+
+			body {
+				align-items: center;
+				display: grid;
+				gap: var(--example-spacing);
+				grid-template-columns: 1fr 1fr;
+				justify-content: center;
+				padding: var(--example-spacing);
+			}
+
+			h2 {
+				font-weight: semibold;
+				margin: 0;
+			}
+
+			.image-box {
+				align-items: center;
+				border: 1px solid oklch(96.8% 0.007 247.896);
+				display: flex;
+				flex-direction: column;
+				flex-shrink: 0;
+				gap: var(--example-spacing);
+				height: 100%;
+				justify-content: center;
+			}
 
 			image-tag {
 				--image-height: 15rem;
@@ -26,15 +57,23 @@
 	</head>
 	<body>
 		<div class="image-box">
+			<h2>Basic implementation</h2>
+
 			<image-tag src="https://picsum.photos/300/300"></image-tag>
 		</div>
 		<div class="image-box">
+			<h2>Showing fallback</h2>
+
 			<image-tag src="#"></image-tag>
 		</div>
 		<div class="image-box custom-styling">
+			<h2>Custom fallback styling</h2>
+
 			<image-tag src="#"></image-tag>
 		</div>
 		<div class="image-box custom-fallback">
+			<h2>Custom fallback</h2>
+
 			<image-tag src="#">
 				<div slot="fallback">
 					Fallback!
