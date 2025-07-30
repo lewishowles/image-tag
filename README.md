@@ -14,11 +14,23 @@ As custom elements require a closing tag, basic usage takes the form:
 
 The source of the image is applied to an internal `img` tag, and if that image fails to load, our fallback appears instead.
 
+### With a custom fallback
+
+A custom fallback can be rendered using the `fallback` slot, containing any information you'd like to display if the image fails to load, such as a user's initials when displaying an avatar.
+
+```html
+<image-tag src="#">
+	<div slot="fallback">
+		Fallback!
+	</div>
+</image-tag>
+```
+
 ## Styling
 
 Various CSS variables are available to customise the image, and, primarily, the fallback.
 
-| Variable Name | Default Value |
+| Variable name | Default value |
 |-|-|
 | `--image-height` | `100%` |
 | `--image-width` | `100%` |
